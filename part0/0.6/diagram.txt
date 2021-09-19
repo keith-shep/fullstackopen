@@ -1,0 +1,12 @@
+title 0.6
+
+
+browser->server: HTTP POST https://studies.cs.helsinki.fi/exampleapp/new_note_spa
+server-->browser: new_note_spa
+
+
+note over browser:
+browser executes the event handler
+that renders notes to display by appending to the list of notes
+end note
+
