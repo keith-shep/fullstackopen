@@ -1,12 +1,18 @@
-title 0.5
+title Exercise 0.4: new note - traditional web page
 
+browser->server: HTTP POST https://studies.cs.helsinki.fi/exampleapp/new_note
+server-->browser: Response header redirect
 
-browser->server: HTTP GET https://studies.cs.helsinki.fi/exampleapp/spa
+note over browser:
+server sends a response header of location: /notes
+end note
+
+browser->server: HTTP GET https://studies.cs.helsinki.fi/exampleapp/notes
 server-->browser: HTML-code
 browser->server: HTTP GET https://studies.cs.helsinki.fi/exampleapp/main.css
 server-->browser: main.css
-browser->server: HTTP GET https://studies.cs.helsinki.fi/exampleapp/spa.js
-server-->browser: spa.js
+browser->server: HTTP GET https://studies.cs.helsinki.fi/exampleapp/main.js
+server-->browser: main.js
 
 note over browser:
 browser starts executing js-code
