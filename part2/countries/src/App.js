@@ -14,6 +14,7 @@ function App() {
 
   const handleChange = (e) => {
     setFilter(e.target.value);
+    setSelectedCountry("");
   };
 
   const handleClick = (country) => {
@@ -46,7 +47,7 @@ function App() {
 
     return (
       <div>
-        <h2>{country.name.common}</h2>
+        <h2>{countryName}</h2>
         <p>capital {capital}</p>
         <p>region {region}</p>
         <h3>languages</h3>
@@ -55,8 +56,24 @@ function App() {
             <li key={language}>{language}</li>
           ))}
         </ul>
-        <img src={flagUrl} alt={country.name.common} />
+        <img src={flagUrl} alt={countryName} />
       </div>
+    );
+  };
+
+  const countryList = () => {
+    const countries = filteredCountries.map((country) => country.name.common);
+    return (
+      <ul>
+        {countries.map((name) => (
+          <li key={name}>
+            {name}
+            <button onClick={() => handleClick(name)}>
+              {selectedCountry === name ? "hide" : "show"}
+            </button>
+          </li>
+        ))}
+      </ul>
     );
   };
 
@@ -69,18 +86,7 @@ function App() {
       const country = filteredCountries[0];
       return detailsOf(country.name.common);
     } else {
-      return (
-        <ul>
-          {filteredCountries.map((country) => (
-            <li key={country.name.common}>
-              {country.name.common}
-              <button onClick={() => handleClick(country.name.common)}>
-                {selectedCountry === country.name.common ? "hide" : "show"}
-              </button>
-            </li>
-          ))}
-        </ul>
-      );
+      return countryList();
     }
   };
 
