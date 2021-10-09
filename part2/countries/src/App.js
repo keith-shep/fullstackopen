@@ -5,12 +5,38 @@ function App() {
   const [countries, setCountries] = useState([]);
   const [filter, setFilter] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("");
+  const [countryWeather, setCountryWeather] = useState(null);
+
+  const api_key = process.env.REACT_APP_API_KEY;
 
   useEffect(() => {
     axios.get("https://restcountries.com/v3.1/all").then((res) => {
       setCountries(res.data);
     });
   }, []);
+
+  useEffect(() => {
+    const url = `http://api.weatherstack.com/current?access_key=${api_key}&query=${selectedCountry}`;
+    axios.get(url).then((res) => {
+      if (res.data.success === false) {
+        return;
+      } else {
+        setCountryWeather(res.data);
+      }
+    });
+  }, [selectedCountry, api_key]);
+
+  const filteredCountries = filter
+    ? countries.filter((c) =>
+        c.name.common.toLowerCase().includes(filter.toLowerCase())
+      )
+    : [];
+
+  useEffect(() => {
+    if (filteredCountries.length === 1 && !selectedCountry) {
+      setSelectedCountry(filteredCountries[0].name.common);
+    }
+  }, [selectedCountry, filteredCountries]);
 
   const handleChange = (e) => {
     setFilter(e.target.value);
@@ -24,12 +50,6 @@ function App() {
       setSelectedCountry(country);
     }
   };
-
-  const filteredCountries = filter
-    ? countries.filter((c) =>
-        c.name.common.toLowerCase().includes(filter.toLowerCase())
-      )
-    : [];
 
   const detailsOf = (countryName) => {
     const country = filteredCountries.find(
@@ -57,6 +77,18 @@ function App() {
           ))}
         </ul>
         <img src={flagUrl} alt={countryName} />
+
+        {countryWeather && (
+          <>
+            <h3>weather in {capital}</h3>
+            <p>temperature: {countryWeather.current.temperature} Celsius</p>
+            <img src={countryWeather.current.weather_icons} alt={countryName} />
+            <p>
+              wind:
+              {`${countryWeather.current.wind_speed} mph | direction ${countryWeather.current.wind_dir}`}
+            </p>
+          </>
+        )}
       </div>
     );
   };
@@ -64,16 +96,19 @@ function App() {
   const countryList = () => {
     const countries = filteredCountries.map((country) => country.name.common);
     return (
-      <ul>
-        {countries.map((name) => (
-          <li key={name}>
-            {name}
-            <button onClick={() => handleClick(name)}>
-              {selectedCountry === name ? "hide" : "show"}
-            </button>
-          </li>
-        ))}
-      </ul>
+      <>
+        <ul>
+          {countries.map((name) => (
+            <li key={name}>
+              {name}
+              <button onClick={() => handleClick(name)}>
+                {selectedCountry === name ? "hide" : "show"}
+              </button>
+            </li>
+          ))}
+        </ul>
+        {detailsOf(selectedCountry)}
+      </>
     );
   };
 
@@ -83,8 +118,7 @@ function App() {
     } else if (filteredCountries.length > 10) {
       return "too many matches, specify another filter";
     } else if (filteredCountries.length === 1) {
-      const country = filteredCountries[0];
-      return detailsOf(country.name.common);
+      return detailsOf(selectedCountry);
     } else {
       return countryList();
     }
@@ -97,7 +131,6 @@ function App() {
         <input value={filter} onChange={handleChange} />
       </p>
       {content()}
-      {detailsOf(selectedCountry)}
     </div>
   );
 }
