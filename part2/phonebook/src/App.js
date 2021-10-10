@@ -27,6 +27,29 @@ const App = () => {
     setFilter(e.target.value);
   };
 
+  const createPerson = (personObject) => {
+    personService
+      .create(personObject)
+      .then((createdPerson) => {
+        setPersons(persons.concat(createdPerson));
+        setNewName("");
+        setNewNumber("");
+      })
+      .catch((e) => alert(e));
+  };
+
+  const updatePerson = (id, personObject) => {
+    personService
+      .update(id, personObject)
+      .then((updatedPerson) => {
+        const updatedPersons = persons.map((person) =>
+          person.id === id ? updatedPerson : person
+        );
+        setPersons(updatedPersons);
+      })
+      .catch((e) => alert(e));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -40,24 +63,10 @@ const App = () => {
           `${newName} is already added to the phonebook, replace with new number?`
         )
       ) {
-        personService
-          .update(existingPerson.id, newPerson)
-          .then((updatedPerson) => {
-            const updatedPersons = persons.map((p) =>
-              p.id === existingPerson.id ? updatedPerson : p
-            );
-            setPersons(updatedPersons);
-          });
+        updatePerson(existingPerson.id, newPerson);
       }
     } else {
-      personService
-        .create(newPerson)
-        .then((createdPerson) => {
-          setPersons(persons.concat(createdPerson));
-          setNewName("");
-          setNewNumber("");
-        })
-        .catch((e) => alert(e));
+      createPerson(newPerson);
     }
   };
 
