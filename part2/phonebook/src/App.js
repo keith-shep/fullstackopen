@@ -3,6 +3,7 @@ import Filter from "./components/Filter";
 import PersonForm from "./components/PersonForm";
 import Persons from "./components/Persons";
 import personService from "./services/persons";
+import Notification from "./components/Notification";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -14,6 +15,9 @@ const App = () => {
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [filter, setFilter] = useState("");
+
+  const [notificationMessage, setNotificationMessage] = useState(null);
+  const [messageType, setMessageType] = useState(null);
 
   const handleNameChange = (e) => {
     setNewName(e.target.value);
@@ -34,8 +38,16 @@ const App = () => {
         setPersons(persons.concat(createdPerson));
         setNewName("");
         setNewNumber("");
+        setMessageType("success");
+        setNotificationMessage(`Added ${createdPerson.name}`);
+        setTimeout(() => {
+          setMessageType(null);
+          setNotificationMessage(null);
+        }, 2000);
       })
-      .catch((e) => alert(e));
+      .catch((e) => {
+        alert(e);
+      });
   };
 
   const updatePerson = (id, personObject) => {
@@ -47,7 +59,16 @@ const App = () => {
         );
         setPersons(updatedPersons);
       })
-      .catch((e) => alert(e));
+      .catch((e) => {
+        setMessageType("error");
+        setNotificationMessage(
+          `Info of ${personObject.name} has already been removed from the server`
+        );
+        setTimeout(() => {
+          setMessageType(null);
+          setNotificationMessage(null);
+        }, 2000);
+      });
   };
 
   const handleSubmit = (e) => {
@@ -87,6 +108,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notificationMessage} messageType={messageType} />
       <Filter filter={filter} handleFilterChange={handleFilterChange} />
       <PersonForm
         newName={newName}
