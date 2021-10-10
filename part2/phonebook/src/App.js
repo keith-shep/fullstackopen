@@ -1,16 +1,14 @@
-import axios from "axios";
 import React, { useState, useEffect } from "react";
 import Filter from "./components/Filter";
 import PersonForm from "./components/PersonForm";
 import Persons from "./components/Persons";
+import personService from "./services/persons";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/persons")
-      .then((res) => setPersons(res.data));
+    personService.getAll().then((persons) => setPersons(persons));
   }, []);
 
   const [newName, setNewName] = useState("");
@@ -32,20 +30,45 @@ const App = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!isNameUnique(newName)) {
-      alert(`${newName} is already added to the phonebook`);
-      return;
-    }
-
     const newPerson = { name: newName, number: newNumber };
-    setPersons(persons.concat(newPerson));
-    setNewName("");
-    setNewNumber("");
+
+    const existingPerson = persons.find((p) => p.name === newName);
+
+    if (existingPerson) {
+      if (
+        window.confirm(
+          `${newName} is already added to the phonebook, replace with new number?`
+        )
+      ) {
+        personService
+          .update(existingPerson.id, newPerson)
+          .then((updatedPerson) => {
+            const updatedPersons = persons.map((p) =>
+              p.id === existingPerson.id ? updatedPerson : p
+            );
+            setPersons(updatedPersons);
+          });
+      }
+    } else {
+      personService
+        .create(newPerson)
+        .then((createdPerson) => {
+          setPersons(persons.concat(createdPerson));
+          setNewName("");
+          setNewNumber("");
+        })
+        .catch((e) => alert(e));
+    }
   };
 
-  const isNameUnique = (nameToAdd) => {
-    const existingNames = persons.map((person) => person.name);
-    return !existingNames.includes(nameToAdd);
+  const handleDelete = (personObject) => {
+    const { id, name } = personObject;
+    if (window.confirm(`Delete ${name}?`)) {
+      personService
+        .deleteObject(id)
+        .then(setPersons(persons.filter((p) => p.id !== id)))
+        .catch((e) => alert(`${name} is already delete from server`));
+    }
   };
 
   const filteredPersons = persons.filter((p) => {
@@ -63,7 +86,7 @@ const App = () => {
         handleNumberChange={handleNumberChange}
         handleSubmit={handleSubmit}
       />
-      <Persons filteredPersons={filteredPersons} />
+      <Persons filteredPersons={filteredPersons} handleDelete={handleDelete} />
     </div>
   );
 };
